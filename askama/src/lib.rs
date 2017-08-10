@@ -215,6 +215,7 @@
 extern crate askama_derive;
 
 use std::env;
+use std::fmt;
 use std::fs::{self, DirEntry};
 use std::io;
 use std::path::{Path, PathBuf};
@@ -222,12 +223,18 @@ use std::path::{Path, PathBuf};
 /// Main `Template` trait; implementations are generally derived
 pub trait Template {
     /// Renders the template to the given `writer` buffer
-    fn render_to(&self, writer: &mut std::fmt::Write);
+    fn render_to(&self, writer: &mut std::fmt::Write) -> Result<(), fmt::Error>;
     /// Helper method which allocates a new `String` and renders into it
-    fn render(&self) -> String {
+    fn render(&self) -> Result<String, fmt::Error> {
         let mut buf = String::new();
-        self.render_to(&mut buf);
-        buf
+        self.render_to(&mut buf)?;
+        Ok(buf)
+    }
+}
+
+impl fmt::Display for Template {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.render_to(f)
     }
 }
 
